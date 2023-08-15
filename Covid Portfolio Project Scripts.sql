@@ -1,3 +1,11 @@
+/*
+Covid 19 Data Exploration 
+
+Skills used: Joins, CTE's, Temp Tables, Windows Functions, Aggregate Functions, Creating Views, Converting Data Types
+
+*/
+
+
 select *
 from PortfolioProject..CovidDeaths
 where continent is not null
@@ -10,7 +18,7 @@ from PortfolioProject..CovidDeaths
 where continent is not null
 order by 1,2
 
--- Looking at Total Cases Vs Total Deaths
+-- Total Cases Vs Total Deaths
 -- Shows the risk of dying if you contract covid in your country
 select location,date,total_cases, total_deaths, (total_deaths/total_cases)*100 as DeathPercentage
 from PortfolioProject..CovidDeaths
@@ -18,7 +26,7 @@ where location like '%Honduras%'
 and continent is not null
 order by 1,2
 
--- Looking at total Cases vs Population
+-- Total Cases vs Population
 -- Shows what percentage of population got Covid
 
 select location,date,population, total_cases,  (total_cases/population)*100 as PercentPopulationInfected
@@ -28,14 +36,14 @@ and continent is not null
 order by 1,2
 
 
---Looking at Countries with Highest infection rate compared to Population
+-- Countries with Highest infection rate compared to Population
 select location,population, max(total_cases) as HighestInfectionCount,  max((total_cases/population))*100 as PercentPopulationInfected
 from PortfolioProject..CovidDeaths
 where continent is not null
 Group by location, population
 order by PercentPopulationInfected desc
 
---Showing the countries with the highest death count per population
+-- Countries with the highest death count per population
 
 select location, max(cast(total_deaths as int)) as TotalDeathCount
 from PortfolioProject..CovidDeaths
@@ -47,6 +55,7 @@ order by TotalDeathCount desc
 --Breaking things down by Continent
 
 --Showing the continents with the highest death count
+
 select continent, max(cast(total_deaths as int)) as TotalDeathCount
 from PortfolioProject..CovidDeaths
 where continent is not null
@@ -55,6 +64,7 @@ order by TotalDeathCount desc
 
 
 -- Global Numbers by Date
+
 select date, sum(new_cases) as TotalCases, sum(cast(new_deaths as int)) as TotalDeaths, sum(cast(new_deaths as int))/sum(new_cases) *100 as DeadPercentage
 from PortfolioProject..CovidDeaths
 where continent is not null
@@ -69,7 +79,9 @@ Order by 1,2
 
 
 
---Looking at total population vs vaccination
+-- Total population vs vaccination
+-- Shows Percentage of Population that has recieved at least one Covid Vaccine
+
 select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
 , sum(convert(int, vac.new_vaccinations)) over (partition by dea.location order by dea.location, dea.date) as RollingPeopleVaccinated
 from PortfolioProject..CovidDeaths dea
@@ -80,7 +92,7 @@ where dea.continent is not null
 Order by 2,3
 
 
--- Use CTE
+-- Using CTE to perform Calculation on Partition By in previous query
 
 with PopvsVac (continent,location,date,population,new_vaccinations, RollingPeopleVaccinated)
 as
@@ -98,7 +110,7 @@ select *, (RollingPeopleVaccinated/population)*100
 from PopvsVac
 
 
---Temp Table
+-- Using Temp Table to perform Calculation on Partition By in previous query
 
 Drop table if exists #PercentPopulationVaccinated
 Create table #PercentPopulationVaccinated
